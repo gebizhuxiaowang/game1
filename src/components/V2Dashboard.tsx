@@ -19,7 +19,7 @@ interface Props {
   onImport: (code: string) => boolean
 }
 
-const speedOptions: TimeSpeed[] = [0, 1, 2, 4, 8, 16]
+const speedOptions: TimeSpeed[] = [0, 1, 2, 4]
 const scheduleDays = [3, 7, 14, 30]
 
 function dateFor(session: GameSessionV2) {
@@ -30,7 +30,7 @@ function dateFor(session: GameSessionV2) {
 }
 
 export function V2Dashboard({ session, onSpeed, onResume, onAddSchedule, onRemoveSchedule, onEventChoice, onUsePill, onRollback, onReincarnate, onDismissOffline, onToggleOpportunity, onReset, onExport, onImport }: Props) {
-  const [tab, setTab] = useState<'schedule' | 'records' | 'settings'>('schedule')
+  const [tab, setTab] = useState<'schedule' | 'records' | 'settings'>('records')
   const [activity, setActivity] = useState<DayActivity>('cultivate')
   const [days, setDays] = useState(7)
   const [saveOpen, setSaveOpen] = useState(false)
@@ -68,7 +68,7 @@ export function V2Dashboard({ session, onSpeed, onResume, onAddSchedule, onRemov
 
     <section className="attribute-rail">{([['悟', player.daoJi.wuxing], ['心', player.daoJi.daoxin], ['根', player.daoJi.gengu], ['运', player.daoJi.qiyun], ['血', player.daoJi.xuemai]] as const).map(([label, value]) => <div key={label}><small>{label}</small><strong>{value}</strong></div>)}<div className="dao-yun"><small>道韵</small><strong>{player.daoYun.name} Lv.{player.daoYun.level}</strong></div><div className="lifespan"><small>骨龄 / 寿元</small><strong>{player.age} / {player.lifespanMax}</strong></div></section>
 
-    <nav className="game-tabs v2-tabs"><button className={tab === 'schedule' ? 'active' : ''} onClick={() => setTab('schedule')}>日程天机</button><button className={tab === 'records' ? 'active' : ''} onClick={() => setTab('records')}>仙途纪要</button><button className={tab === 'settings' ? 'active' : ''} onClick={() => setTab('settings')}>自动策略</button></nav>
+    <nav className="game-tabs v2-tabs"><button className={tab === 'records' ? 'active' : ''} onClick={() => setTab('records')}>仙途纪要</button><button className={tab === 'schedule' ? 'active' : ''} onClick={() => setTab('schedule')}>日程天机</button><button className={tab === 'settings' ? 'active' : ''} onClick={() => setTab('settings')}>自动策略</button></nav>
 
     {tab === 'schedule' && <section className="v2-panel schedule-panel">
       <div className="panel-intro"><div><p className="eyebrow">未来日程</p><h2>{currentSchedule ? `${ACTIVITIES[currentSchedule.activity].icon} 正在${ACTIVITIES[currentSchedule.activity].name}` : '暂无安排，默认闭关吐纳'}</h2></div><span>{currentSchedule ? `剩余 ${currentSchedule.days} 日` : '可添加新的行动块'}</span></div>
@@ -81,7 +81,7 @@ export function V2Dashboard({ session, onSpeed, onResume, onAddSchedule, onRemov
 
     {tab === 'settings' && <section className="v2-panel"><div className="panel-intro"><div><p className="eyebrow">自动策略</p><h2>事件暂停规则</h2></div><span>风险与命运事件始终暂停</span></div><label className="policy-row"><div><strong>机会事件暂停</strong><small>关闭后，机会事件会优先采取谨慎侦察并自动写入纪要。</small></div><input type="checkbox" checked={session.autoPolicy.pauseOpportunity} onChange={onToggleOpportunity} /></label><article className="policy-info"><strong>当前保护规则</strong><p>重伤与濒死会强制养伤；离线最多结算 30 个安全游戏日，离线期间不会出现需要手动决策的危险事件。</p></article></section>}
 
-    {session.pendingEvent && <div className="modal-backdrop"><section className="event-modal" role="dialog" aria-modal="true" aria-label="遭遇事件"><p className="eyebrow">{session.pendingEvent.tier}事件 · 时间已暂停</p><div className="event-title"><h2>{session.pendingEvent.title}</h2><span>{eventRisk}</span></div><p>{session.pendingEvent.description}</p><div className="event-stats"><span>威胁 {session.pendingEvent.threat}</span><span>可能收益 ◈ {session.pendingEvent.reward}</span><span>伤势：{session.resources.injury}</span></div><div className="event-choices">{session.pendingEvent.choices.map((choice) => <button key={choice.id} className={choice.risky ? 'risky' : ''} onClick={() => onEventChoice(choice.id)}><strong>{choice.label}</strong><span>{choice.description}</span>{choice.risky && <em>高风险</em>}<b>→</b></button>)}</div></section></div>}
+    {session.pendingEvent && <div className="modal-backdrop"><section className="event-modal" role="dialog" aria-modal="true" aria-label="遭遇事件"><p className="eyebrow">{session.pendingEvent.tier}事件 · 时间已暂停</p><div className="event-title"><h2>{session.pendingEvent.title}</h2><span>{eventRisk}</span></div><p>{session.pendingEvent.description}</p><div className="event-stats"><span>威胁 {session.pendingEvent.threat}</span><span>可能收益 ◈ {session.pendingEvent.reward}</span><span>伤势：{session.resources.injury}</span></div><div className="event-choices">{session.pendingEvent.choices.map((choice) => <button key={choice.id} className={choice.risky ? 'risky' : ''} onClick={() => { onEventChoice(choice.id); setTab('records') }}><strong>{choice.label}</strong><span>{choice.description}</span>{choice.risky && <em>高风险</em>}<b>→</b></button>)}</div></section></div>}
 
     {session.death && <div className="modal-backdrop"><section className="event-modal death-modal" role="dialog" aria-modal="true" aria-label="生死抉择"><p className="eyebrow">生死临界 · 时间已静止</p><h2>{session.death.kind === 'rollback' ? '道果尚可回溯' : '此世寿尽，轮回将启'}</h2><p>{session.death.cause}</p>{session.death.kind === 'rollback' ? <><p className="death-note">回溯至最近道果检查点，损失 20% 下品灵石，并留下一道伤势。已发生的因果不会被无偿改写。</p><button className="primary-button" onClick={onRollback}>付出代价，回溯道果</button></> : <><p className="death-note">轮回会保留部分灵石、道基、核心功法和道韵残忆；此世日程与伤势将消散。</p><button className="primary-button" onClick={onReincarnate}>携一缕残忆，轮回重修</button></>}</section></div>}
 

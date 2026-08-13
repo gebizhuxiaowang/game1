@@ -3,7 +3,7 @@ import { DWELLING_SPEED_BONUS } from './data'
 import { addCultivationExp, refreshPower } from './power'
 import { createRng, type RngFn } from './rng'
 
-export type TimeSpeed = 0 | 1 | 2 | 4 | 8 | 16
+export type TimeSpeed = 0 | 1 | 2 | 4
 export type DayActivity = 'cultivate' | 'work' | 'forage' | 'travel' | 'recover'
 export type InjuryLevel = '无恙' | '轻伤' | '重伤' | '濒死'
 export type EventTier = '日志' | '机会' | '风险' | '命运'
@@ -443,6 +443,12 @@ export function resolveLiveEvent(session: GameSessionV2, choice: EventApproach):
   if (!event) return session
   const next = clone(session)
   resolveEventMutable(next, event, choice)
+  if (!next.death) {
+    next.paused = false
+    if (next.speed === 0) next.speed = 1
+    next.lastSyncedAt = Date.now()
+    addLog(next, `「${event.title}」的因果暂告一段落，时光继续流转。`)
+  }
   return next
 }
 
