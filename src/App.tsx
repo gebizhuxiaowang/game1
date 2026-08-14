@@ -4,13 +4,13 @@ import { V2Dashboard } from './components/V2Dashboard'
 import { createCharacter, type CharacterCreationInput } from './game/characterCreation'
 import { clearGame, importDaoGuo, loadGame } from './game/persistence'
 import { clearV2Game, exportV2DaoGuo, importV2DaoGuo, loadV2Game, saveV2Game } from './game/persistenceV2'
-import { addSchedule, advanceByWallClock, advanceGameDays, applyHealingPill, createGameSessionV2, dismissOfflineReport, migratePlayerToV2, reincarnateSession, removeSchedule, resolveLiveEvent, resumeSession, rollbackAfterDeath, setAutoPolicy, setTimeSpeed, type DayActivity, type EventApproach, type GameSessionV2, type TimeSpeed } from './game/v2'
+import { abandonFate, addSchedule, advanceByWallClock, advanceGameDays, applyHealingPill, createGameSessionV2, dismissOfflineReport, enterExpedition, migratePlayerToV2, reincarnateSession, removeSchedule, resolveExpeditionNode, resolveLiveEvent, resumeSession, rollbackAfterDeath, setAutoPolicy, setTimeSpeed, withdrawFromExpedition, type DayActivity, type EventApproach, type GameSessionV2, type TimeSpeed } from './game/v2'
 import './App.css'
 
 function loadInitialSession(): GameSessionV2 | null {
   const v2 = loadV2Game()
   if (v2) {
-    if (v2.paused || v2.pendingEvent || v2.death) return v2
+    if (v2.paused || v2.pendingEvent || v2.death || v2.activeExpedition) return v2
     const elapsedDays = Math.floor((Date.now() - v2.lastSyncedAt) / 1000)
     return elapsedDays > 0 ? advanceGameDays(v2, elapsedDays, true) : v2
   }
@@ -62,6 +62,10 @@ function App() {
     onAddSchedule={(activity: DayActivity, days: number) => setSession((current) => current ? addSchedule(current, activity, days) : current)}
     onRemoveSchedule={(id: string) => setSession((current) => current ? removeSchedule(current, id) : current)}
     onEventChoice={(choice: EventApproach) => setSession((current) => current ? resolveLiveEvent(current, choice) : current)}
+    onEnterExpedition={(fateId) => setSession((current) => current ? enterExpedition(current, fateId) : current)}
+    onAbandonFate={(fateId) => setSession((current) => current ? abandonFate(current, fateId) : current)}
+    onExpeditionChoice={(choice) => setSession((current) => current ? resolveExpeditionNode(current, choice) : current)}
+    onWithdrawExpedition={() => setSession((current) => current ? withdrawFromExpedition(current) : current)}
     onUsePill={() => setSession((current) => current ? applyHealingPill(current) : current)}
     onRollback={() => setSession((current) => current ? rollbackAfterDeath(current) : current)}
     onReincarnate={() => setSession((current) => current ? reincarnateSession(current) : current)}
