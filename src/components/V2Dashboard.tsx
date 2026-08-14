@@ -4,6 +4,7 @@ import { ACTIVITIES, maxUnfinishedFates, type DayActivity, type EventApproach, t
 
 interface Props {
   session: GameSessionV2
+  onOpenModeHub: () => void
   onSpeed: (speed: TimeSpeed) => void
   onResume: () => void
   onAddSchedule: (activity: DayActivity, days: number) => void
@@ -33,7 +34,7 @@ function dateFor(session: GameSessionV2) {
   return `天玄历 ${year} 年 ${month} 月 ${day} 日`
 }
 
-export function V2Dashboard({ session, onSpeed, onResume, onAddSchedule, onRemoveSchedule, onEventChoice, onEnterExpedition, onAbandonFate, onExpeditionChoice, onWithdrawExpedition, onUsePill, onRollback, onReincarnate, onDismissOffline, onToggleOpportunity, onReset, onExport, onImport }: Props) {
+export function V2Dashboard({ session, onOpenModeHub, onSpeed, onResume, onAddSchedule, onRemoveSchedule, onEventChoice, onEnterExpedition, onAbandonFate, onExpeditionChoice, onWithdrawExpedition, onUsePill, onRollback, onReincarnate, onDismissOffline, onToggleOpportunity, onReset, onExport, onImport }: Props) {
   const [tab, setTab] = useState<'schedule' | 'records' | 'settings'>('records')
   const [activity, setActivity] = useState<DayActivity>('cultivate')
   const [days, setDays] = useState(7)
@@ -58,7 +59,7 @@ export function V2Dashboard({ session, onSpeed, onResume, onAddSchedule, onRemov
   return <main className="v2-shell">
     <header className="v2-header">
       <div><p className="eyebrow">实时修仙 · V2.1 因果流转</p><h1>{player.name}<span> · {dateFor(session)}</span></h1></div>
-      <div className="header-actions"><button className="text-button" onClick={() => setSaveOpen(true)}>道果</button><button className="text-button danger" onClick={onReset}>重开</button></div>
+      <div className="header-actions"><button className="text-button" onClick={onOpenModeHub}>玩法入口</button><button className="text-button" onClick={() => setSaveOpen(true)}>道果</button><button className="text-button danger" onClick={onReset}>重开</button></div>
     </header>
 
     <section className="time-console" aria-label="时间控制">
